@@ -12,13 +12,22 @@ class Oppdrag private constructor(
     var tittel: String,
     var kundeNavn: String,
     var beskrivelse: String?,
-    var startDato: LocalDate,
-    var sluttDato: LocalDate,
-    var status: OppdragStatus,
-    var timepris: BigDecimal,
+    startDato: LocalDate,
+    sluttDato: LocalDate,
+    status: OppdragStatus,
+    timepris: BigDecimal,
     val konsulentId: Long,
     val opprettetDato: LocalDateTime
 ) {
+    var startDato: LocalDate = startDato
+        private set
+    var sluttDato: LocalDate = sluttDato
+        private set
+    var status: OppdragStatus = status
+        private set
+    var timepris: BigDecimal = timepris
+        private set
+
     private var persistertState: PersistertState? = null
 
     val erNy: Boolean get() = persistertState == null
@@ -56,6 +65,17 @@ class Oppdrag private constructor(
             )
         }
         status = nyStatus
+    }
+
+    fun endrePeriode(startDato: LocalDate, sluttDato: LocalDate) {
+        this.startDato = startDato
+        this.sluttDato = sluttDato
+        validerDatoer()
+    }
+
+    fun endreTimepris(timepris: BigDecimal) {
+        this.timepris = timepris
+        validerTimepris()
     }
 
     fun overlapper(annet: Oppdrag): Boolean {

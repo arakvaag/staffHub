@@ -10,7 +10,7 @@ enum class OppdragStatus {
     fun gyldigeOverganger(): Set<OppdragStatus> = when (this) {
         FORESLÅTT -> setOf(BEKREFTET, KANSELLERT)
         BEKREFTET -> setOf(AKTIV, KANSELLERT)
-        AKTIV -> setOf(FULLFØRT)
+        AKTIV -> setOf(FULLFØRT, KANSELLERT)
         FULLFØRT -> emptySet()
         KANSELLERT -> emptySet()
     }

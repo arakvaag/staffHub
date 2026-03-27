@@ -45,11 +45,12 @@ class KompetanseTabell(private val jdbc: JdbcTemplate) {
         return jdbc.query("SELECT * FROM kompetanse WHERE konsulent_id = ?", radMapper, konsulentId)
     }
 
+    fun selectAll(): List<KompetanseRad> {
+        return jdbc.query("SELECT * FROM kompetanse", radMapper)
+    }
+
     fun selectByFagområde(fagområde: String): List<KompetanseRad> {
         return jdbc.query("SELECT * FROM kompetanse WHERE fagomrade = ?", radMapper, fagområde)
     }
 
-    fun deleteByKonsulentId(konsulentId: Long) {
-        jdbc.update("DELETE FROM kompetanse WHERE konsulent_id = ?", konsulentId)
-    }
 }

@@ -18,9 +18,9 @@ class OppdragStatusTest {
     }
 
     @Test
-    fun `AKTIV kan gå til FULLFØRT`() {
+    fun `AKTIV kan gå til FULLFØRT og KANSELLERT`() {
         assertThat(OppdragStatus.AKTIV.gyldigeOverganger())
-            .containsExactly(OppdragStatus.FULLFØRT)
+            .containsExactlyInAnyOrder(OppdragStatus.FULLFØRT, OppdragStatus.KANSELLERT)
     }
 
     @Test

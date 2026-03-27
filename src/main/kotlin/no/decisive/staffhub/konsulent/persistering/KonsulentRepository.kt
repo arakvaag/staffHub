@@ -40,16 +40,25 @@ class KonsulentRepository(
 
     fun finnAlle(): List<Konsulent> {
         val rader = konsulentTabell.selectAll()
+        val kompetanserPerKonsulent = kompetanseTabell.selectAll().groupBy { it.konsulentId }
         return rader.map { rad ->
-            val kompetanseRader = kompetanseTabell.selectByKonsulentId(rad.id)
-            tilDomene(rad, kompetanseRader)
+            tilDomene(rad, kompetanserPerKonsulent[rad.id] ?: emptyList())
         }
     }
 
     fun finnAlleMedFagområde(fagområde: Fagområde): List<Konsulent> {
-        val kompetanseRader = kompetanseTabell.selectByFagområde(fagområde.name)
-        val konsulentIder = kompetanseRader.map { it.konsulentId }.distinct()
-        return konsulentIder.map { hentPåId(it) }
+        val alleKompetanser = kompetanseTabell.selectAll()
+        val konsulentIder = alleKompetanser
+            .filter { it.fagområde == fagområde.name }
+            .map { it.konsulentId }
+            .distinct()
+            .toSet()
+        if (konsulentIder.isEmpty()) return emptyList()
+        val kompetanserPerKonsulent = alleKompetanser.groupBy { it.konsulentId }
+        val rader = konsulentTabell.selectAll().filter { it.id in konsulentIder }
+        return rader.map { rad ->
+            tilDomene(rad, kompetanserPerKonsulent[rad.id] ?: emptyList())
+        }
     }
 
     private fun tilRad(konsulent: Konsulent) = KonsulentRad(

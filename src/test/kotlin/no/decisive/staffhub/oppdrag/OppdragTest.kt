@@ -158,13 +158,14 @@ class OppdragTest {
     }
 
     @Test
-    fun `skal feile ved ugyldig overgang fra AKTIV til KANSELLERT`() {
+    fun `skal tillate overgang fra AKTIV til KANSELLERT`() {
         val oppdrag = lagOppdrag()
         oppdrag.endreStatus(OppdragStatus.BEKREFTET)
         oppdrag.endreStatus(OppdragStatus.AKTIV)
 
-        assertThatThrownBy { oppdrag.endreStatus(OppdragStatus.KANSELLERT) }
-            .isInstanceOf(UgyldigStatusOvergangException::class.java)
+        oppdrag.endreStatus(OppdragStatus.KANSELLERT)
+
+        assertThat(oppdrag.status).isEqualTo(OppdragStatus.KANSELLERT)
     }
 
     @Test
@@ -286,6 +287,54 @@ class OppdragTest {
         oppdrag.tittel = "Ny tittel"
 
         assertThat(oppdrag.erEndret).isTrue()
+    }
+
+    @Test
+    fun `endrePeriode skal oppdatere datoer`() {
+        val oppdrag = lagOppdrag()
+        val nyStart = LocalDate.of(2026, 3, 1)
+        val nySlutt = LocalDate.of(2026, 9, 30)
+
+        oppdrag.endrePeriode(nyStart, nySlutt)
+
+        assertThat(oppdrag.startDato).isEqualTo(nyStart)
+        assertThat(oppdrag.sluttDato).isEqualTo(nySlutt)
+    }
+
+    @Test
+    fun `endrePeriode skal kaste ValideringException ved ugyldig periode`() {
+        val oppdrag = lagOppdrag()
+
+        assertThatThrownBy {
+            oppdrag.endrePeriode(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 1, 1))
+        }.isInstanceOf(ValideringException::class.java)
+    }
+
+    @Test
+    fun `endreTimepris skal oppdatere timepris`() {
+        val oppdrag = lagOppdrag()
+
+        oppdrag.endreTimepris(BigDecimal("2000.00"))
+
+        assertThat(oppdrag.timepris).isEqualTo(BigDecimal("2000.00"))
+    }
+
+    @Test
+    fun `endreTimepris skal kaste ValideringException ved negativ verdi`() {
+        val oppdrag = lagOppdrag()
+
+        assertThatThrownBy {
+            oppdrag.endreTimepris(BigDecimal("-100"))
+        }.isInstanceOf(ValideringException::class.java)
+    }
+
+    @Test
+    fun `endreTimepris skal kaste ValideringException ved null-verdi`() {
+        val oppdrag = lagOppdrag()
+
+        assertThatThrownBy {
+            oppdrag.endreTimepris(BigDecimal.ZERO)
+        }.isInstanceOf(ValideringException::class.java)
     }
 
     @Test
