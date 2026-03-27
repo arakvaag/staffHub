@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: staffhub
+  datasource:
+    url: jdbc:postgresql://localhost:5432/staffhub
+    username: staffhub
+    password: staffhub
+  flyway:
+    enabled: true
+    locations: classpath:db/migration

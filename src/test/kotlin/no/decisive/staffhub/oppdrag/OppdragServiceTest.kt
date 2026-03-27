@@ -1,0 +1,136 @@
+package no.decisive.staffhub.oppdrag
+
+import no.decisive.staffhub.felles.IdProvider
+import no.decisive.staffhub.felles.OverlappException
+import no.decisive.staffhub.felles.UgyldigStatusOvergangException
+import no.decisive.staffhub.konsulent.Konsulent
+import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
+import no.decisive.staffhub.oppdrag.persistering.OppdragRepository
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
+import java.math.BigDecimal
+import java.time.LocalDate
+
+class OppdragServiceTest {
+
+    private val oppdragRepository = mock<OppdragRepository>()
+    private val konsulentRepository = mock<KonsulentRepository>()
+    private val oppdragService = OppdragService(oppdragRepository, konsulentRepository)
+
+    @Test
+    fun `skal opprette oppdrag`() {
+        // given
+        val konsulent = lagTestKonsulent()
+        val oppdrag = lagTestOppdrag()
+        whenever(konsulentRepository.hentPåId(1L)).thenReturn(konsulent)
+
+        // when
+        val resultat = oppdragService.opprett(oppdrag)
+
+        // then
+        assertThat(resultat.tittel).isEqualTo("Modernisering")
+        assertThat(resultat.status).isEqualTo(OppdragStatus.FORESLÅTT)
+        verify(oppdragRepository).lagre(any())
+        verify(konsulentRepository).hentPåId(1L)
+    }
+
+    @Test
+    fun `skal endre status fra FORESLÅTT til BEKREFTET`() {
+        // given
+        val oppdrag = lagTestOppdrag()
+        whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
+
+        // when
+        val resultat = oppdragService.endreStatus(1L, OppdragStatus.BEKREFTET)
+
+        // then
+        assertThat(resultat.status).isEqualTo(OppdragStatus.BEKREFTET)
+        verify(oppdragRepository).lagre(any())
+    }
+
+    @Test
+    fun `skal endre status fra BEKREFTET til AKTIV uten overlapp`() {
+        // given
+        val oppdrag = lagTestOppdrag()
+        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
+        whenever(oppdragRepository.finnAktiveForKonsulent(1L)).thenReturn(emptyList())
+
+        // when
+        val resultat = oppdragService.endreStatus(1L, OppdragStatus.AKTIV)
+
+        // then
+        assertThat(resultat.status).isEqualTo(OppdragStatus.AKTIV)
+    }
+
+    @Test
+    fun `skal feile ved ugyldig statusovergang`() {
+        // given
+        val oppdrag = lagTestOppdrag()
+        whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
+
+        // when/then
+        assertThatThrownBy { oppdragService.endreStatus(1L, OppdragStatus.FULLFØRT) }
+            .isInstanceOf(UgyldigStatusOvergangException::class.java)
+    }
+
+    @Test
+    fun `skal feile ved overlappende aktive oppdrag`() {
+        // given
+        val oppdrag = lagTestOppdrag()
+        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
+
+        val aktivtOppdrag = lagTestOppdrag(id = 2L)
+        aktivtOppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        aktivtOppdrag.endreStatus(OppdragStatus.AKTIV)
+        whenever(oppdragRepository.finnAktiveForKonsulent(1L)).thenReturn(listOf(aktivtOppdrag))
+
+        // when/then
+        assertThatThrownBy { oppdragService.endreStatus(1L, OppdragStatus.AKTIV) }
+            .isInstanceOf(OverlappException::class.java)
+    }
+
+    @Test
+    fun `skal kansellere foreslått oppdrag`() {
+        // given
+        val oppdrag = lagTestOppdrag()
+        whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
+
+        // when
+        val resultat = oppdragService.endreStatus(1L, OppdragStatus.KANSELLERT)
+
+        // then
+        assertThat(resultat.status).isEqualTo(OppdragStatus.KANSELLERT)
+    }
+
+    private fun lagTestOppdrag(id: Long = 1L): Oppdrag {
+        val mockIdProvider = mock<IdProvider> {
+            on { nesteOppdragId() }.thenReturn(id)
+        }
+        return Oppdrag(
+            idProvider = mockIdProvider,
+            tittel = "Modernisering",
+            kundeNavn = "Acme AS",
+            beskrivelse = "Modernisere backend",
+            startDato = LocalDate.of(2026, 1, 1),
+            sluttDato = LocalDate.of(2026, 6, 30),
+            timepris = BigDecimal("1500.00"),
+            konsulentId = 1L
+        )
+    }
+
+    private fun lagTestKonsulent(): Konsulent {
+        val mockIdProvider = mock<IdProvider> {
+            on { nesteKonsulentId() }.thenReturn(1L)
+        }
+        return Konsulent(
+            idProvider = mockIdProvider,
+            fornavn = "Ola",
+            etternavn = "Nordmann",
+            epost = "ola@firma.no"
+        )
+    }
+}
