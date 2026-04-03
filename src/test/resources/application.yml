@@ -1,0 +1,7 @@
+spring:
+  flyway:
+    clean-disabled: false
+
+logging:
+  level:
+    org.flywaydb: WARN
