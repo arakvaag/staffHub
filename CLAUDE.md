@@ -64,7 +64,12 @@ Tre lag med tester, persisterings- og komponenttester krever Docker (for Testcon
 
 1. **Unit-tester** (domeneklasser, service med mockede repos): Ingen Spring-kontekst, raske
 2. **Persisteringstester** (`DatabaseTest`-baseklasse): Testcontainers + Flyway + JdbcTemplate direkte, ingen Spring-kontekst. Kjører `flyway.clean()` + `migrate()` før hver test
-3. **Komponenttester** (`@SpringBootTest` + `@AutoConfigureMockMvc`): Full Spring-kontekst med Testcontainers
+3. **Komponenttester** (`KomponentTest`-baseklasse i `no.decisive.staffhub.komponenttest`):
+   Full Spring-kontekst med Testcontainers. Kjører `flyway.clean()` + `migrate()` før hver test.
+   - **Black-box-testing**: Bruker rå JSON-strenger for requests, ikke produksjons-DTOer eller domeneklasser
+   - **JSONAssert** med `LENIENT`-modus for å verifisere responser (ignorerer ekstra felter som `id` og `opprettetDato`)
+   - Navngivning gjenspeiler API-et, ikke implementasjonen: `KonsulentApiKomponentTest`, ikke `KonsulentControllerKomponentTest`
+   - Dekker happy path, validering og feilscenarier (404, 400, 409) for hvert API-endepunkt
 
 Kjør alle tester: `mvn clean test`
 
