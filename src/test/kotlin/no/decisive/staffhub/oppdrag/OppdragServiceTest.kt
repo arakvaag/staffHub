@@ -1,8 +1,10 @@
 package no.decisive.staffhub.oppdrag
 
 import no.decisive.staffhub.felles.IdProvider
+import no.decisive.staffhub.felles.IkkeFunnetException
 import no.decisive.staffhub.felles.OverlappException
 import no.decisive.staffhub.felles.UgyldigStatusOvergangException
+import no.decisive.staffhub.felles.ValideringException
 import no.decisive.staffhub.konsulent.Konsulent
 import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
 import no.decisive.staffhub.oppdrag.persistering.OppdragRepository
@@ -91,6 +93,18 @@ class OppdragServiceTest {
         // when/then
         assertThatThrownBy { oppdragService.endreStatus(1L, OppdragStatus.AKTIV) }
             .isInstanceOf(OverlappException::class.java)
+    }
+
+    @Test
+    fun `skal feile ved opprettelse når konsulent ikke finnes`() {
+        // given
+        val oppdrag = lagTestOppdrag()
+        whenever(konsulentRepository.hentPåId(1L)).thenThrow(IkkeFunnetException("Konsulent med id 1 ikke funnet"))
+
+        // when/then
+        assertThatThrownBy { oppdragService.opprett(oppdrag) }
+            .isInstanceOf(ValideringException::class.java)
+        verify(oppdragRepository, never()).lagre(any())
     }
 
     @Test

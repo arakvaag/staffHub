@@ -1,6 +1,8 @@
 package no.decisive.staffhub.oppdrag
 
+import no.decisive.staffhub.felles.IkkeFunnetException
 import no.decisive.staffhub.felles.OverlappException
+import no.decisive.staffhub.felles.ValideringException
 import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
 import no.decisive.staffhub.oppdrag.persistering.OppdragRepository
 import org.springframework.stereotype.Service
@@ -14,8 +16,11 @@ class OppdragService(
 ) {
 
     fun opprett(oppdrag: Oppdrag): Oppdrag {
-        // Valider at konsulenten finnes
-        konsulentRepository.hentPåId(oppdrag.konsulentId)
+        try {
+            konsulentRepository.hentPåId(oppdrag.konsulentId)
+        } catch (_: IkkeFunnetException) {
+            throw ValideringException("Konsulent med id ${oppdrag.konsulentId} finnes ikke")
+        }
         oppdragRepository.lagre(oppdrag)
         return oppdrag
     }

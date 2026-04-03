@@ -119,6 +119,124 @@ class OppdragApiKomponentTest : KomponentTest() {
     }
 
     @Test
+    fun `skal returnere 400 når konsulent ikke finnes`() {
+        mockMvc.perform(
+            post("/api/oppdrag")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "tittel": "Prosjekt",
+                        "kundeNavn": "Kunde AS",
+                        "startDato": "2026-05-01",
+                        "sluttDato": "2026-08-31",
+                        "timepris": 1200,
+                        "konsulentId": 999999
+                    }
+                """.trimIndent())
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `skal returnere 400 ved ugyldig statusovergang`() {
+        val opprettResponse = mockMvc.perform(
+            post("/api/oppdrag")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "tittel": "Prosjekt",
+                        "kundeNavn": "Kunde AS",
+                        "startDato": "2026-05-01",
+                        "sluttDato": "2026-08-31",
+                        "timepris": 1200,
+                        "konsulentId": $konsulentId
+                    }
+                """.trimIndent())
+        )
+            .andExpect(status().isCreated)
+            .andReturn().response.contentAsString
+
+        val oppdragId = objectMapper.readTree(opprettResponse).get("id").asLong()
+
+        // FORESLÅTT -> FULLFØRT er ikke en gyldig overgang
+        mockMvc.perform(
+            put("/api/oppdrag/$oppdragId/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{ "nyStatus": "FULLFØRT" }""")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `skal returnere 409 ved overlappende aktive oppdrag`() {
+        // Opprett første oppdrag og aktiver det
+        val førsteResponse = mockMvc.perform(
+            post("/api/oppdrag")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "tittel": "Første oppdrag",
+                        "kundeNavn": "Kunde AS",
+                        "startDato": "2026-05-01",
+                        "sluttDato": "2026-08-31",
+                        "timepris": 1200,
+                        "konsulentId": $konsulentId
+                    }
+                """.trimIndent())
+        )
+            .andExpect(status().isCreated)
+            .andReturn().response.contentAsString
+
+        val førsteId = objectMapper.readTree(førsteResponse).get("id").asLong()
+
+        mockMvc.perform(
+            put("/api/oppdrag/$førsteId/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{ "nyStatus": "BEKREFTET" }""")
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(
+            put("/api/oppdrag/$førsteId/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{ "nyStatus": "AKTIV" }""")
+        ).andExpect(status().isOk)
+
+        // Opprett andre oppdrag med overlappende datoer
+        val andreResponse = mockMvc.perform(
+            post("/api/oppdrag")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "tittel": "Andre oppdrag",
+                        "kundeNavn": "Annen Kunde AS",
+                        "startDato": "2026-06-01",
+                        "sluttDato": "2026-10-31",
+                        "timepris": 1500,
+                        "konsulentId": $konsulentId
+                    }
+                """.trimIndent())
+        )
+            .andExpect(status().isCreated)
+            .andReturn().response.contentAsString
+
+        val andreId = objectMapper.readTree(andreResponse).get("id").asLong()
+
+        mockMvc.perform(
+            put("/api/oppdrag/$andreId/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{ "nyStatus": "BEKREFTET" }""")
+        ).andExpect(status().isOk)
+
+        // Forsøk å aktivere det andre — skal gi 409 pga overlapp
+        mockMvc.perform(
+            put("/api/oppdrag/$andreId/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{ "nyStatus": "AKTIV" }""")
+        )
+            .andExpect(status().isConflict)
+    }
+
+    @Test
     fun `skal feile ved ugyldig oppdrag-request`() {
         mockMvc.perform(
             post("/api/oppdrag")
