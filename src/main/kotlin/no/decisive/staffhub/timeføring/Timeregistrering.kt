@@ -13,7 +13,7 @@ class Timeregistrering private constructor(
     val timer: Int,
     val minutter: Int,
     val beskrivelse: String,
-    val opprettetDato: LocalDateTime
+    val opprettetDato: LocalDateTime,
 ) {
     private var persistertState: PersistertState? = null
 
@@ -27,7 +27,7 @@ class Timeregistrering private constructor(
         dato: LocalDate,
         timer: Int,
         minutter: Int,
-        beskrivelse: String
+        beskrivelse: String,
     ) : this(
         id = idProvider.nesteTimeregistreringId(),
         oppdragId = oppdragId,
@@ -36,7 +36,7 @@ class Timeregistrering private constructor(
         timer = timer,
         minutter = minutter,
         beskrivelse = beskrivelse,
-        opprettetDato = LocalDateTime.now()
+        opprettetDato = LocalDateTime.now(),
     ) {
         valider()
     }
@@ -60,18 +60,7 @@ class Timeregistrering private constructor(
     }
 
     private fun tilState() = PersistertState(
-        id, oppdragId, konsulentId, dato, timer, minutter, beskrivelse, opprettetDato
-    )
-
-    data class PersistertState(
-        val id: Long,
-        val oppdragId: Long,
-        val konsulentId: Long,
-        val dato: LocalDate,
-        val timer: Int,
-        val minutter: Int,
-        val beskrivelse: String,
-        val opprettetDato: LocalDateTime
+        id, oppdragId, konsulentId, dato, timer, minutter, beskrivelse, opprettetDato,
     )
 
     companion object {
@@ -83,9 +72,20 @@ class Timeregistrering private constructor(
             timer = state.timer,
             minutter = state.minutter,
             beskrivelse = state.beskrivelse,
-            opprettetDato = state.opprettetDato
+            opprettetDato = state.opprettetDato,
         ).apply {
             bekreftPersistert()
         }
     }
+
+    data class PersistertState(
+        val id: Long,
+        val oppdragId: Long,
+        val konsulentId: Long,
+        val dato: LocalDate,
+        val timer: Int,
+        val minutter: Int,
+        val beskrivelse: String,
+        val opprettetDato: LocalDateTime,
+    )
 }

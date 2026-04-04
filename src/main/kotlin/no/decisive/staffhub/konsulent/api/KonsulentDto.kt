@@ -20,13 +20,13 @@ data class OpprettKonsulentRequest(
     val epost: String,
     val telefon: String? = null,
     @field:Valid
-    val kompetanser: List<OpprettKompetanseRequest> = emptyList()
+    val kompetanser: List<OpprettKompetanseRequest> = emptyList(),
 )
 
 data class OpprettKompetanseRequest(
     val fagområde: Fagområde,
     val nivå: Kompetansenivå,
-    val beskrivelse: String? = null
+    val beskrivelse: String? = null,
 )
 
 data class KonsulentResponse(
@@ -36,14 +36,14 @@ data class KonsulentResponse(
     val epost: String,
     val telefon: String?,
     val kompetanser: List<KompetanseResponse>,
-    val opprettetDato: LocalDateTime
+    val opprettetDato: LocalDateTime,
 )
 
 data class KompetanseResponse(
     val id: Long,
     val fagområde: Fagområde,
     val nivå: Kompetansenivå,
-    val beskrivelse: String?
+    val beskrivelse: String?,
 )
 
 fun OpprettKonsulentRequest.tilDomene(idProvider: IdProvider): Konsulent {

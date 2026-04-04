@@ -17,7 +17,7 @@ data class OppdragRad(
     val status: String?,
     val timepris: BigDecimal?,
     val konsulentId: Long?,
-    val opprettetDato: LocalDateTime?
+    val opprettetDato: LocalDateTime?,
 )
 
 @Component

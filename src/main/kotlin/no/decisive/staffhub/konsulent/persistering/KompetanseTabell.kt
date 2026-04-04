@@ -9,7 +9,7 @@ data class KompetanseRad(
     val konsulentId: Long,
     val fagområde: String?,
     val nivå: String?,
-    val beskrivelse: String?
+    val beskrivelse: String?,
 )
 
 @Component
@@ -48,5 +48,4 @@ class KompetanseTabell(private val jdbc: JdbcTemplate) {
     fun selectAll(): List<KompetanseRad> {
         return jdbc.query("SELECT * FROM kompetanse", radMapper)
     }
-
 }

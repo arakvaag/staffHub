@@ -17,26 +17,8 @@ class Oppdrag private constructor(
     status: Status,
     timepris: BigDecimal,
     val konsulentId: Long,
-    val opprettetDato: LocalDateTime
+    val opprettetDato: LocalDateTime,
 ) {
-
-    enum class Status {
-        FORESLÅTT,
-        BEKREFTET,
-        AKTIV,
-        FULLFØRT,
-        KANSELLERT;
-
-        fun gyldigeOverganger(): Set<Status> = when (this) {
-            FORESLÅTT -> setOf(BEKREFTET, KANSELLERT)
-            BEKREFTET -> setOf(AKTIV, KANSELLERT)
-            AKTIV -> setOf(FULLFØRT, KANSELLERT)
-            FULLFØRT -> emptySet()
-            KANSELLERT -> emptySet()
-        }
-
-        fun kanGåTil(nyStatus: Status): Boolean = nyStatus in gyldigeOverganger()
-    }
 
     var startDato: LocalDate = startDato
         private set
@@ -60,7 +42,7 @@ class Oppdrag private constructor(
         startDato: LocalDate,
         sluttDato: LocalDate,
         timepris: BigDecimal,
-        konsulentId: Long
+        konsulentId: Long,
     ) : this(
         id = idProvider.nesteOppdragId(),
         tittel = tittel,
@@ -71,7 +53,7 @@ class Oppdrag private constructor(
         status = Status.FORESLÅTT,
         timepris = timepris,
         konsulentId = konsulentId,
-        opprettetDato = LocalDateTime.now()
+        opprettetDato = LocalDateTime.now(),
     ) {
         validerDatoer()
         validerTimepris()
@@ -97,9 +79,8 @@ class Oppdrag private constructor(
         validerTimepris()
     }
 
-    fun overlapper(annet: Oppdrag): Boolean {
-        return !startDato.isAfter(annet.sluttDato) && !sluttDato.isBefore(annet.startDato)
-    }
+    fun overlapper(annet: Oppdrag): Boolean =
+        !startDato.isAfter(annet.sluttDato) && !sluttDato.isBefore(annet.startDato)
 
     fun bekreftPersistert() {
         this.persistertState = tilState()
@@ -118,8 +99,46 @@ class Oppdrag private constructor(
     }
 
     private fun tilState() = PersistertState(
-        id, tittel, kundeNavn, beskrivelse, startDato, sluttDato, status, timepris, konsulentId, opprettetDato
+        id, tittel, kundeNavn, beskrivelse, startDato, sluttDato, status, timepris, konsulentId, opprettetDato,
     )
+
+    companion object {
+        fun fra(state: PersistertState): Oppdrag {
+            return Oppdrag(
+                id = state.id,
+                tittel = state.tittel,
+                kundeNavn = state.kundeNavn,
+                beskrivelse = state.beskrivelse,
+                startDato = state.startDato,
+                sluttDato = state.sluttDato,
+                status = state.status,
+                timepris = state.timepris,
+                konsulentId = state.konsulentId,
+                opprettetDato = state.opprettetDato,
+            ).apply {
+                bekreftPersistert()
+            }
+        }
+    }
+
+    enum class Status {
+        FORESLÅTT,
+        BEKREFTET,
+        AKTIV,
+        FULLFØRT,
+        KANSELLERT,
+        ;
+
+        fun gyldigeOverganger(): Set<Status> = when (this) {
+            FORESLÅTT -> setOf(BEKREFTET, KANSELLERT)
+            BEKREFTET -> setOf(AKTIV, KANSELLERT)
+            AKTIV -> setOf(FULLFØRT, KANSELLERT)
+            FULLFØRT -> emptySet()
+            KANSELLERT -> emptySet()
+        }
+
+        fun kanGåTil(nyStatus: Status): Boolean = nyStatus in gyldigeOverganger()
+    }
 
     data class PersistertState(
         val id: Long,
@@ -131,26 +150,6 @@ class Oppdrag private constructor(
         val status: Status,
         val timepris: BigDecimal,
         val konsulentId: Long,
-        val opprettetDato: LocalDateTime
+        val opprettetDato: LocalDateTime,
     )
-
-    companion object {
-        fun fra(state: PersistertState): Oppdrag {
-            val oppdrag = Oppdrag(
-                id = state.id,
-                tittel = state.tittel,
-                kundeNavn = state.kundeNavn,
-                beskrivelse = state.beskrivelse,
-                startDato = state.startDato,
-                sluttDato = state.sluttDato,
-                status = state.status,
-                timepris = state.timepris,
-                konsulentId = state.konsulentId,
-                opprettetDato = state.opprettetDato
-            )
-            oppdrag.bekreftPersistert()
-            return oppdrag
-        }
-
-    }
 }

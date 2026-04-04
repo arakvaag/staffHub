@@ -17,12 +17,11 @@ class KonsulentService(
     }
 
     @Transactional(readOnly = true)
-    fun hentAlle(fagområde: Fagområde? = null): List<Konsulent> {
-        return if (fagområde != null) {
+    fun hentAlle(fagområde: Fagområde? = null): List<Konsulent> =
+        if (fagområde != null) {
             konsulentRepository.finnAlleMedFagområde(fagområde)
         } else {
             konsulentRepository.finnAlle()
         }
-    }
 
 }

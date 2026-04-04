@@ -11,7 +11,7 @@ data class KonsulentRad(
     val etternavn: String?,
     val epost: String?,
     val telefon: String?,
-    val opprettetDato: LocalDateTime?
+    val opprettetDato: LocalDateTime?,
 )
 
 @Component

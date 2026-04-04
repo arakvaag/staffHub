@@ -24,12 +24,12 @@ data class OpprettOppdragRequest(
     @field:Positive(message = "timepris må være positiv")
     val timepris: BigDecimal,
     @field:NotNull(message = "konsulentId er påkrevd")
-    val konsulentId: Long
+    val konsulentId: Long,
 )
 
 data class EndreStatusRequest(
     @field:NotNull(message = "nyStatus er påkrevd")
-    val nyStatus: Status
+    val nyStatus: Status,
 )
 
 data class OppdragResponse(
@@ -42,7 +42,7 @@ data class OppdragResponse(
     val status: Status,
     val timepris: BigDecimal,
     val konsulentId: Long,
-    val opprettetDato: LocalDateTime
+    val opprettetDato: LocalDateTime,
 )
 
 fun OpprettOppdragRequest.tilDomene(idProvider: IdProvider) = Oppdrag(

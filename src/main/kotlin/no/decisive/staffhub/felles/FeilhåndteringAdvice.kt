@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 data class FeilResponse(
     val melding: String,
-    val detaljer: List<String> = emptyList()
+    val detaljer: List<String> = emptyList(),
 )
 
 @RestControllerAdvice
