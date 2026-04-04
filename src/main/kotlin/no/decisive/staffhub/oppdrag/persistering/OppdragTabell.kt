@@ -33,7 +33,7 @@ class OppdragTabell(private val jdbc: JdbcTemplate) {
             sluttDato = rs.getDate("slutt_dato")?.toLocalDate(),
             status = rs.getString("status"),
             timepris = rs.getBigDecimal("timepris"),
-            konsulentId = rs.getLong("konsulent_id"),
+            konsulentId = rs.getObject("konsulent_id") as? Long,
             opprettetDato = rs.getTimestamp("opprettet_dato")?.toLocalDateTime()
         )
     }
