@@ -2,7 +2,7 @@ package no.decisive.staffhub.oppdrag.persistering
 
 import no.decisive.staffhub.felles.IkkeFunnetException
 import no.decisive.staffhub.oppdrag.Oppdrag
-import no.decisive.staffhub.oppdrag.OppdragStatus
+import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -30,7 +30,7 @@ class OppdragRepository(
     }
 
     fun finnAktiveForKonsulent(konsulentId: Long): List<Oppdrag> {
-        return oppdragTabell.selectByKonsulentIdOgStatus(konsulentId, OppdragStatus.AKTIV.name)
+        return oppdragTabell.selectByKonsulentIdOgStatus(konsulentId, Status.AKTIV.name)
             .map { tilDomene(it) }
     }
 
@@ -55,7 +55,7 @@ class OppdragRepository(
             beskrivelse = rad.beskrivelse,
             startDato = rad.startDato!!,
             sluttDato = rad.sluttDato!!,
-            status = OppdragStatus.valueOf(rad.status!!),
+            status = Status.valueOf(rad.status!!),
             timepris = rad.timepris!!,
             konsulentId = rad.konsulentId!!,
             opprettetDato = rad.opprettetDato!!

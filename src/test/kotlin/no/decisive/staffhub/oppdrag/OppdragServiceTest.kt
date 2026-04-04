@@ -7,6 +7,7 @@ import no.decisive.staffhub.felles.UgyldigStatusOvergangException
 import no.decisive.staffhub.felles.ValideringException
 import no.decisive.staffhub.konsulent.Konsulent
 import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
+import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import no.decisive.staffhub.oppdrag.persistering.OppdragRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -33,7 +34,7 @@ class OppdragServiceTest {
 
         // then
         assertThat(resultat.tittel).isEqualTo("Modernisering")
-        assertThat(resultat.status).isEqualTo(OppdragStatus.FORESLÅTT)
+        assertThat(resultat.status).isEqualTo(Status.FORESLÅTT)
         verify(oppdragRepository).lagre(any())
         verify(konsulentRepository).hentPåId(1L)
     }
@@ -45,10 +46,10 @@ class OppdragServiceTest {
         whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
 
         // when
-        val resultat = oppdragService.endreStatus(1L, OppdragStatus.BEKREFTET)
+        val resultat = oppdragService.endreStatus(1L, Status.BEKREFTET)
 
         // then
-        assertThat(resultat.status).isEqualTo(OppdragStatus.BEKREFTET)
+        assertThat(resultat.status).isEqualTo(Status.BEKREFTET)
         verify(oppdragRepository).lagre(any())
     }
 
@@ -56,15 +57,15 @@ class OppdragServiceTest {
     fun `skal endre status fra BEKREFTET til AKTIV uten overlapp`() {
         // given
         val oppdrag = lagTestOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
         whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
         whenever(oppdragRepository.finnAktiveForKonsulent(1L)).thenReturn(emptyList())
 
         // when
-        val resultat = oppdragService.endreStatus(1L, OppdragStatus.AKTIV)
+        val resultat = oppdragService.endreStatus(1L, Status.AKTIV)
 
         // then
-        assertThat(resultat.status).isEqualTo(OppdragStatus.AKTIV)
+        assertThat(resultat.status).isEqualTo(Status.AKTIV)
     }
 
     @Test
@@ -74,7 +75,7 @@ class OppdragServiceTest {
         whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
 
         // when/then
-        assertThatThrownBy { oppdragService.endreStatus(1L, OppdragStatus.FULLFØRT) }
+        assertThatThrownBy { oppdragService.endreStatus(1L, Status.FULLFØRT) }
             .isInstanceOf(UgyldigStatusOvergangException::class.java)
     }
 
@@ -82,16 +83,16 @@ class OppdragServiceTest {
     fun `skal feile ved overlappende aktive oppdrag`() {
         // given
         val oppdrag = lagTestOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
         whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
 
         val aktivtOppdrag = lagTestOppdrag(id = 2L)
-        aktivtOppdrag.endreStatus(OppdragStatus.BEKREFTET)
-        aktivtOppdrag.endreStatus(OppdragStatus.AKTIV)
+        aktivtOppdrag.endreStatus(Status.BEKREFTET)
+        aktivtOppdrag.endreStatus(Status.AKTIV)
         whenever(oppdragRepository.finnAktiveForKonsulent(1L)).thenReturn(listOf(aktivtOppdrag))
 
         // when/then
-        assertThatThrownBy { oppdragService.endreStatus(1L, OppdragStatus.AKTIV) }
+        assertThatThrownBy { oppdragService.endreStatus(1L, Status.AKTIV) }
             .isInstanceOf(OverlappException::class.java)
     }
 
@@ -114,10 +115,10 @@ class OppdragServiceTest {
         whenever(oppdragRepository.hentPåId(1L)).thenReturn(oppdrag)
 
         // when
-        val resultat = oppdragService.endreStatus(1L, OppdragStatus.KANSELLERT)
+        val resultat = oppdragService.endreStatus(1L, Status.KANSELLERT)
 
         // then
-        assertThat(resultat.status).isEqualTo(OppdragStatus.KANSELLERT)
+        assertThat(resultat.status).isEqualTo(Status.KANSELLERT)
     }
 
     private fun lagTestOppdrag(id: Long = 1L): Oppdrag {

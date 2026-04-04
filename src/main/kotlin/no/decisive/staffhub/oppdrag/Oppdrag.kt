@@ -14,16 +14,35 @@ class Oppdrag private constructor(
     var beskrivelse: String?,
     startDato: LocalDate,
     sluttDato: LocalDate,
-    status: OppdragStatus,
+    status: Status,
     timepris: BigDecimal,
     val konsulentId: Long,
     val opprettetDato: LocalDateTime
 ) {
+
+    enum class Status {
+        FORESLÅTT,
+        BEKREFTET,
+        AKTIV,
+        FULLFØRT,
+        KANSELLERT;
+
+        fun gyldigeOverganger(): Set<Status> = when (this) {
+            FORESLÅTT -> setOf(BEKREFTET, KANSELLERT)
+            BEKREFTET -> setOf(AKTIV, KANSELLERT)
+            AKTIV -> setOf(FULLFØRT, KANSELLERT)
+            FULLFØRT -> emptySet()
+            KANSELLERT -> emptySet()
+        }
+
+        fun kanGåTil(nyStatus: Status): Boolean = nyStatus in gyldigeOverganger()
+    }
+
     var startDato: LocalDate = startDato
         private set
     var sluttDato: LocalDate = sluttDato
         private set
-    var status: OppdragStatus = status
+    var status: Status = status
         private set
     var timepris: BigDecimal = timepris
         private set
@@ -49,7 +68,7 @@ class Oppdrag private constructor(
         beskrivelse = beskrivelse,
         startDato = startDato,
         sluttDato = sluttDato,
-        status = OppdragStatus.FORESLÅTT,
+        status = Status.FORESLÅTT,
         timepris = timepris,
         konsulentId = konsulentId,
         opprettetDato = LocalDateTime.now()
@@ -58,7 +77,7 @@ class Oppdrag private constructor(
         validerTimepris()
     }
 
-    fun endreStatus(nyStatus: OppdragStatus) {
+    fun endreStatus(nyStatus: Status) {
         if (!status.kanGåTil(nyStatus)) {
             throw UgyldigStatusOvergangException(
                 "Kan ikke endre status fra $status til $nyStatus"
@@ -109,7 +128,7 @@ class Oppdrag private constructor(
         val beskrivelse: String?,
         val startDato: LocalDate,
         val sluttDato: LocalDate,
-        val status: OppdragStatus,
+        val status: Status,
         val timepris: BigDecimal,
         val konsulentId: Long,
         val opprettetDato: LocalDateTime
@@ -132,5 +151,6 @@ class Oppdrag private constructor(
             oppdrag.bekreftPersistert()
             return oppdrag
         }
+
     }
 }

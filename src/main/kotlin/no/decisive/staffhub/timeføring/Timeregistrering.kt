@@ -75,19 +75,17 @@ class Timeregistrering private constructor(
     )
 
     companion object {
-        fun fra(state: PersistertState): Timeregistrering {
-            val reg = Timeregistrering(
-                id = state.id,
-                oppdragId = state.oppdragId,
-                konsulentId = state.konsulentId,
-                dato = state.dato,
-                timer = state.timer,
-                minutter = state.minutter,
-                beskrivelse = state.beskrivelse,
-                opprettetDato = state.opprettetDato
-            )
-            reg.bekreftPersistert()
-            return reg
+        fun fra(state: PersistertState) = Timeregistrering(
+            id = state.id,
+            oppdragId = state.oppdragId,
+            konsulentId = state.konsulentId,
+            dato = state.dato,
+            timer = state.timer,
+            minutter = state.minutter,
+            beskrivelse = state.beskrivelse,
+            opprettetDato = state.opprettetDato
+        ).apply {
+            bekreftPersistert()
         }
     }
 }

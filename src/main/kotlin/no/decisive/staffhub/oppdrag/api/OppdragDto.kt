@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import no.decisive.staffhub.felles.IdProvider
 import no.decisive.staffhub.oppdrag.Oppdrag
-import no.decisive.staffhub.oppdrag.OppdragStatus
+import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -29,7 +29,7 @@ data class OpprettOppdragRequest(
 
 data class EndreStatusRequest(
     @field:NotNull(message = "nyStatus er påkrevd")
-    val nyStatus: OppdragStatus
+    val nyStatus: Status
 )
 
 data class OppdragResponse(
@@ -39,7 +39,7 @@ data class OppdragResponse(
     val beskrivelse: String?,
     val startDato: LocalDate,
     val sluttDato: LocalDate,
-    val status: OppdragStatus,
+    val status: Status,
     val timepris: BigDecimal,
     val konsulentId: Long,
     val opprettetDato: LocalDateTime

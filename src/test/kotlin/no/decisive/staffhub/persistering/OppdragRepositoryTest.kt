@@ -7,7 +7,7 @@ import no.decisive.staffhub.konsulent.persistering.KompetanseTabell
 import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
 import no.decisive.staffhub.konsulent.persistering.KonsulentTabell
 import no.decisive.staffhub.oppdrag.Oppdrag
-import no.decisive.staffhub.oppdrag.OppdragStatus
+import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import no.decisive.staffhub.oppdrag.persistering.OppdragRepository
 import no.decisive.staffhub.oppdrag.persistering.OppdragTabell
 import org.assertj.core.api.Assertions.assertThat
@@ -68,7 +68,7 @@ class OppdragRepositoryTest : DatabaseTest() {
         assertThat(hentet.beskrivelse).isEqualTo("Modernisere backend")
         assertThat(hentet.startDato).isEqualTo(LocalDate.of(2026, 1, 1))
         assertThat(hentet.sluttDato).isEqualTo(LocalDate.of(2026, 6, 30))
-        assertThat(hentet.status).isEqualTo(OppdragStatus.FORESLÅTT)
+        assertThat(hentet.status).isEqualTo(Status.FORESLÅTT)
         assertThat(hentet.timepris).isEqualByComparingTo(BigDecimal("1500.00"))
         assertThat(hentet.konsulentId).isEqualTo(konsulentId)
         assertThat(hentet.opprettetDato).isEqualTo(oppdrag.opprettetDato)
@@ -97,11 +97,11 @@ class OppdragRepositoryTest : DatabaseTest() {
         val oppdrag = lagOppdrag()
         oppdragRepository.lagre(oppdrag)
 
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
         oppdragRepository.lagre(oppdrag)
 
         val hentet = oppdragRepository.hentPåId(oppdrag.id)
-        assertThat(hentet.status).isEqualTo(OppdragStatus.BEKREFTET)
+        assertThat(hentet.status).isEqualTo(Status.BEKREFTET)
     }
 
     @Test
@@ -144,8 +144,8 @@ class OppdragRepositoryTest : DatabaseTest() {
     @Test
     fun `skal finne aktive oppdrag for konsulent`() {
         val aktivt = lagOppdrag(tittel = "Aktivt")
-        aktivt.endreStatus(OppdragStatus.BEKREFTET)
-        aktivt.endreStatus(OppdragStatus.AKTIV)
+        aktivt.endreStatus(Status.BEKREFTET)
+        aktivt.endreStatus(Status.AKTIV)
         oppdragRepository.lagre(aktivt)
 
         val foreslått = lagOppdrag(

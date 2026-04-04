@@ -3,6 +3,7 @@ package no.decisive.staffhub.oppdrag
 import no.decisive.staffhub.felles.IdProvider
 import no.decisive.staffhub.felles.UgyldigStatusOvergangException
 import no.decisive.staffhub.felles.ValideringException
+import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -42,7 +43,7 @@ class OppdragTest {
         assertThat(oppdrag.beskrivelse).isEqualTo("Modernisere backend")
         assertThat(oppdrag.startDato).isEqualTo(LocalDate.of(2026, 1, 1))
         assertThat(oppdrag.sluttDato).isEqualTo(LocalDate.of(2026, 6, 30))
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.FORESLÅTT)
+        assertThat(oppdrag.status).isEqualTo(Status.FORESLÅTT)
         assertThat(oppdrag.timepris).isEqualByComparingTo(BigDecimal("1500.00"))
         assertThat(oppdrag.konsulentId).isEqualTo(1L)
         assertThat(oppdrag.opprettetDato).isNotNull()
@@ -52,7 +53,7 @@ class OppdragTest {
     fun `nytt oppdrag skal ha status FORESLÅTT`() {
         val oppdrag = lagOppdrag()
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.FORESLÅTT)
+        assertThat(oppdrag.status).isEqualTo(Status.FORESLÅTT)
     }
 
     @Test
@@ -96,56 +97,56 @@ class OppdragTest {
     fun `skal endre status fra FORESLÅTT til BEKREFTET`() {
         val oppdrag = lagOppdrag()
 
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.BEKREFTET)
+        assertThat(oppdrag.status).isEqualTo(Status.BEKREFTET)
     }
 
     @Test
     fun `skal endre status fra FORESLÅTT til KANSELLERT`() {
         val oppdrag = lagOppdrag()
 
-        oppdrag.endreStatus(OppdragStatus.KANSELLERT)
+        oppdrag.endreStatus(Status.KANSELLERT)
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.KANSELLERT)
+        assertThat(oppdrag.status).isEqualTo(Status.KANSELLERT)
     }
 
     @Test
     fun `skal endre status fra BEKREFTET til AKTIV`() {
         val oppdrag = lagOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
 
-        oppdrag.endreStatus(OppdragStatus.AKTIV)
+        oppdrag.endreStatus(Status.AKTIV)
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.AKTIV)
+        assertThat(oppdrag.status).isEqualTo(Status.AKTIV)
     }
 
     @Test
     fun `skal endre status fra BEKREFTET til KANSELLERT`() {
         val oppdrag = lagOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
 
-        oppdrag.endreStatus(OppdragStatus.KANSELLERT)
+        oppdrag.endreStatus(Status.KANSELLERT)
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.KANSELLERT)
+        assertThat(oppdrag.status).isEqualTo(Status.KANSELLERT)
     }
 
     @Test
     fun `skal endre status fra AKTIV til FULLFØRT`() {
         val oppdrag = lagOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
-        oppdrag.endreStatus(OppdragStatus.AKTIV)
+        oppdrag.endreStatus(Status.BEKREFTET)
+        oppdrag.endreStatus(Status.AKTIV)
 
-        oppdrag.endreStatus(OppdragStatus.FULLFØRT)
+        oppdrag.endreStatus(Status.FULLFØRT)
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.FULLFØRT)
+        assertThat(oppdrag.status).isEqualTo(Status.FULLFØRT)
     }
 
     @Test
     fun `skal feile ved ugyldig overgang fra FORESLÅTT til AKTIV`() {
         val oppdrag = lagOppdrag()
 
-        assertThatThrownBy { oppdrag.endreStatus(OppdragStatus.AKTIV) }
+        assertThatThrownBy { oppdrag.endreStatus(Status.AKTIV) }
             .isInstanceOf(UgyldigStatusOvergangException::class.java)
     }
 
@@ -153,38 +154,38 @@ class OppdragTest {
     fun `skal feile ved ugyldig overgang fra FORESLÅTT til FULLFØRT`() {
         val oppdrag = lagOppdrag()
 
-        assertThatThrownBy { oppdrag.endreStatus(OppdragStatus.FULLFØRT) }
+        assertThatThrownBy { oppdrag.endreStatus(Status.FULLFØRT) }
             .isInstanceOf(UgyldigStatusOvergangException::class.java)
     }
 
     @Test
     fun `skal tillate overgang fra AKTIV til KANSELLERT`() {
         val oppdrag = lagOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
-        oppdrag.endreStatus(OppdragStatus.AKTIV)
+        oppdrag.endreStatus(Status.BEKREFTET)
+        oppdrag.endreStatus(Status.AKTIV)
 
-        oppdrag.endreStatus(OppdragStatus.KANSELLERT)
+        oppdrag.endreStatus(Status.KANSELLERT)
 
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.KANSELLERT)
+        assertThat(oppdrag.status).isEqualTo(Status.KANSELLERT)
     }
 
     @Test
     fun `skal feile ved overgang fra FULLFØRT`() {
         val oppdrag = lagOppdrag()
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
-        oppdrag.endreStatus(OppdragStatus.AKTIV)
-        oppdrag.endreStatus(OppdragStatus.FULLFØRT)
+        oppdrag.endreStatus(Status.BEKREFTET)
+        oppdrag.endreStatus(Status.AKTIV)
+        oppdrag.endreStatus(Status.FULLFØRT)
 
-        assertThatThrownBy { oppdrag.endreStatus(OppdragStatus.AKTIV) }
+        assertThatThrownBy { oppdrag.endreStatus(Status.AKTIV) }
             .isInstanceOf(UgyldigStatusOvergangException::class.java)
     }
 
     @Test
     fun `skal feile ved overgang fra KANSELLERT`() {
         val oppdrag = lagOppdrag()
-        oppdrag.endreStatus(OppdragStatus.KANSELLERT)
+        oppdrag.endreStatus(Status.KANSELLERT)
 
-        assertThatThrownBy { oppdrag.endreStatus(OppdragStatus.FORESLÅTT) }
+        assertThatThrownBy { oppdrag.endreStatus(Status.FORESLÅTT) }
             .isInstanceOf(UgyldigStatusOvergangException::class.java)
     }
 
@@ -274,7 +275,7 @@ class OppdragTest {
         val oppdrag = lagOppdrag()
         oppdrag.bekreftPersistert()
 
-        oppdrag.endreStatus(OppdragStatus.BEKREFTET)
+        oppdrag.endreStatus(Status.BEKREFTET)
 
         assertThat(oppdrag.erEndret).isTrue()
     }
@@ -346,7 +347,7 @@ class OppdragTest {
             beskrivelse = null,
             startDato = LocalDate.of(2026, 1, 1),
             sluttDato = LocalDate.of(2026, 6, 30),
-            status = OppdragStatus.AKTIV,
+            status = Status.AKTIV,
             timepris = BigDecimal("1500.00"),
             konsulentId = 1L,
             opprettetDato = LocalDateTime.of(2026, 1, 1, 12, 0)
@@ -356,6 +357,6 @@ class OppdragTest {
 
         assertThat(oppdrag.erNy).isFalse()
         assertThat(oppdrag.erEndret).isFalse()
-        assertThat(oppdrag.status).isEqualTo(OppdragStatus.AKTIV)
+        assertThat(oppdrag.status).isEqualTo(Status.AKTIV)
     }
 }

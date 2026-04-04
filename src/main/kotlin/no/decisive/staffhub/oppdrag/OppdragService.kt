@@ -4,6 +4,7 @@ import no.decisive.staffhub.felles.IkkeFunnetException
 import no.decisive.staffhub.felles.OverlappException
 import no.decisive.staffhub.felles.ValideringException
 import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
+import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import no.decisive.staffhub.oppdrag.persistering.OppdragRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,11 +26,11 @@ class OppdragService(
         return oppdrag
     }
 
-    fun endreStatus(id: Long, nyStatus: OppdragStatus): Oppdrag {
+    fun endreStatus(id: Long, nyStatus: Status): Oppdrag {
         val oppdrag = oppdragRepository.hentPåId(id)
         oppdrag.endreStatus(nyStatus)
 
-        if (nyStatus == OppdragStatus.AKTIV) {
+        if (nyStatus == Status.AKTIV) {
             sjekkOverlapp(oppdrag)
         }
 
