@@ -37,11 +37,6 @@ class OppdragService(
         return oppdrag
     }
 
-    @Transactional(readOnly = true)
-    fun hentPåId(id: Long): Oppdrag {
-        return oppdragRepository.hentPåId(id)
-    }
-
     private fun sjekkOverlapp(oppdrag: Oppdrag) {
         val aktiveOppdrag = oppdragRepository.finnAktiveForKonsulent(oppdrag.konsulentId)
         val overlappende = aktiveOppdrag.filter { it.id != oppdrag.id && it.overlapper(oppdrag) }

@@ -15,7 +15,7 @@ data class KompetanseRad(
 @Component
 class KompetanseTabell(private val jdbc: JdbcTemplate) {
 
-    private val radMapper = RowMapper<KompetanseRad> { rs, _ ->
+    private val radMapper = RowMapper { rs, _ ->
         KompetanseRad(
             id = rs.getLong("id"),
             konsulentId = rs.getLong("konsulent_id"),
@@ -47,10 +47,6 @@ class KompetanseTabell(private val jdbc: JdbcTemplate) {
 
     fun selectAll(): List<KompetanseRad> {
         return jdbc.query("SELECT * FROM kompetanse", radMapper)
-    }
-
-    fun selectByFagområde(fagområde: String): List<KompetanseRad> {
-        return jdbc.query("SELECT * FROM kompetanse WHERE fagomrade = ?", radMapper, fagområde)
     }
 
 }

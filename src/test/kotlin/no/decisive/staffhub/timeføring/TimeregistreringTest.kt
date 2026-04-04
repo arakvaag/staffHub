@@ -30,7 +30,15 @@ class TimeregistreringTest {
 
     @Test
     fun `skal opprette timeregistrering`() {
-        val reg = lagTimeregistrering()
+        val reg = Timeregistrering(
+            idProvider = idProvider,
+            oppdragId = 1L,
+            konsulentId = 1L,
+            dato = LocalDate.of(2026, 3, 15),
+            timer = 7,
+            minutter = 30,
+            beskrivelse = "Utvikling"
+        )
 
         assertThat(reg.id).isEqualTo(1L)
         assertThat(reg.oppdragId).isEqualTo(1L)

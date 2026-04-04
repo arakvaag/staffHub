@@ -25,8 +25,4 @@ class KonsulentService(
         }
     }
 
-    @Transactional(readOnly = true)
-    fun hentPåId(id: Long): Konsulent {
-        return konsulentRepository.hentPåId(id)
-    }
 }

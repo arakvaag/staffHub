@@ -17,7 +17,7 @@ data class KonsulentRad(
 @Component
 class KonsulentTabell(private val jdbc: JdbcTemplate) {
 
-    private val radMapper = RowMapper<KonsulentRad> { rs, _ ->
+    private val radMapper = RowMapper { rs, _ ->
         KonsulentRad(
             id = rs.getLong("id"),
             fornavn = rs.getString("fornavn"),

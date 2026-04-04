@@ -66,11 +66,11 @@ Testene bruker Testcontainers og starter automatisk en PostgreSQL-instans — Do
 
 ## API-endepunkter
 
-| Metode | URL | Beskrivelse |
-|--------|-----|-------------|
-| POST | /api/konsulenter | Opprett konsulent med kompetanser |
-| GET | /api/konsulenter | Hent alle konsulenter (filtrering: ?fagområde=BACKEND) |
-| POST | /api/oppdrag | Opprett oppdrag |
-| PUT | /api/oppdrag/{id}/status | Endre status på oppdrag |
-| POST | /api/timeregistreringer | Registrer timer |
-| GET | /api/timeregistreringer | Hent timeregistreringer |
+| Metode | URL                      | Beskrivelse                                            |
+|--------|--------------------------|--------------------------------------------------------|
+| POST   | /api/konsulenter         | Opprett konsulent med kompetanser                      |
+| GET    | /api/konsulenter         | Hent alle konsulenter (filtrering: ?fagområde=BACKEND) |
+| POST   | /api/oppdrag             | Opprett oppdrag                                        |
+| PUT    | /api/oppdrag/{id}/status | Endre status på oppdrag                                |
+| POST   | /api/timeregistreringer  | Registrer timer                                        |
+| GET    | /api/timeregistreringer  | Hent timeregistreringer                                |

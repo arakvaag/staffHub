@@ -23,7 +23,7 @@ data class OppdragRad(
 @Component
 class OppdragTabell(private val jdbc: JdbcTemplate) {
 
-    private val radMapper = RowMapper<OppdragRad> { rs, _ ->
+    private val radMapper = RowMapper { rs, _ ->
         OppdragRad(
             id = rs.getLong("id"),
             tittel = rs.getString("tittel"),
