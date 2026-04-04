@@ -2,6 +2,7 @@ package no.decisive.staffhub.persistering
 
 import no.decisive.staffhub.felles.IdProvider
 import no.decisive.staffhub.felles.IkkeFunnetException
+import no.decisive.staffhub.felles.OptimistiskLåsingException
 import no.decisive.staffhub.konsulent.Konsulent
 import no.decisive.staffhub.konsulent.persistering.KompetanseTabell
 import no.decisive.staffhub.konsulent.persistering.KonsulentRepository
@@ -190,5 +191,36 @@ class OppdragRepositoryTest : DatabaseTest() {
 
         assertThat(oppdrag.erNy).isFalse()
         assertThat(oppdrag.erEndret).isFalse()
+    }
+
+    @Test
+    fun `skal kaste OptimistiskLåsingException ved samtidig endring`() {
+        val oppdrag = lagOppdrag()
+        oppdragRepository.lagre(oppdrag)
+
+        val sesjon1 = oppdragRepository.hentPåId(oppdrag.id)
+        val sesjon2 = oppdragRepository.hentPåId(oppdrag.id)
+
+        sesjon1.tittel = "Endret av sesjon 1"
+        oppdragRepository.lagre(sesjon1)
+
+        sesjon2.tittel = "Endret av sesjon 2"
+        assertThatThrownBy { oppdragRepository.lagre(sesjon2) }
+            .isInstanceOf(OptimistiskLåsingException::class.java)
+    }
+
+    @Test
+    fun `versjon skal inkrementeres etter oppdatering`() {
+        val oppdrag = lagOppdrag()
+        oppdragRepository.lagre(oppdrag)
+        assertThat(oppdrag.versjon).isEqualTo(1)
+
+        oppdrag.tittel = "Ny tittel"
+        assertThat(oppdrag.versjon).isEqualTo(2)
+
+        oppdragRepository.lagre(oppdrag)
+
+        val hentet = oppdragRepository.hentPåId(oppdrag.id)
+        assertThat(hentet.versjon).isEqualTo(2)
     }
 }

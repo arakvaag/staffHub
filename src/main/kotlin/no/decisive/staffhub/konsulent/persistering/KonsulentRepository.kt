@@ -1,6 +1,7 @@
 package no.decisive.staffhub.konsulent.persistering
 
 import no.decisive.staffhub.felles.IkkeFunnetException
+import no.decisive.staffhub.felles.OptimistiskLåsingException
 import no.decisive.staffhub.konsulent.Kompetanse
 import no.decisive.staffhub.konsulent.Kompetanse.Fagområde
 import no.decisive.staffhub.konsulent.Kompetanse.Kompetansenivå
@@ -17,7 +18,10 @@ class KonsulentRepository(
         if (konsulent.erNy) {
             konsulentTabell.insert(tilRad(konsulent))
         } else if (konsulent.erEndret) {
-            konsulentTabell.update(tilRad(konsulent))
+            val raderOppdatert = konsulentTabell.update(tilRad(konsulent), konsulent.persistertVersjon!!)
+            if (raderOppdatert == 0) {
+                throw OptimistiskLåsingException("Konsulent med id ${konsulent.id} ble endret av en annen transaksjon")
+            }
         }
 
         for (kompetanse in konsulent.kompetanser) {
@@ -67,7 +71,8 @@ class KonsulentRepository(
         etternavn = konsulent.etternavn,
         epost = konsulent.epost,
         telefon = konsulent.telefon,
-        opprettetDato = konsulent.opprettetDato
+        opprettetDato = konsulent.opprettetDato,
+        versjon = konsulent.versjon
     )
 
     private fun tilKompetanseRad(kompetanse: Kompetanse, konsulentId: Long) = KompetanseRad(
@@ -88,7 +93,8 @@ class KonsulentRepository(
                 epost = rad.epost!!,
                 telefon = rad.telefon,
                 opprettetDato = rad.opprettetDato!!,
-                kompetanser = kompetanser
+                kompetanser = kompetanser,
+                versjon = rad.versjon!!
             )
         )
     }

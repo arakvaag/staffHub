@@ -9,17 +9,24 @@ import java.time.LocalDateTime
 
 class Oppdrag private constructor(
     val id: Long,
-    var tittel: String,
-    var kundeNavn: String,
-    var beskrivelse: String?,
+    tittel: String,
+    kundeNavn: String,
+    beskrivelse: String?,
     startDato: LocalDate,
     sluttDato: LocalDate,
     status: Status,
     timepris: BigDecimal,
     val konsulentId: Long,
     val opprettetDato: LocalDateTime,
+    versjon: Int,
 ) {
 
+    var tittel: String = tittel
+        set(value) { field = value; versjon++ }
+    var kundeNavn: String = kundeNavn
+        set(value) { field = value; versjon++ }
+    var beskrivelse: String? = beskrivelse
+        set(value) { field = value; versjon++ }
     var startDato: LocalDate = startDato
         private set
     var sluttDato: LocalDate = sluttDato
@@ -28,11 +35,14 @@ class Oppdrag private constructor(
         private set
     var timepris: BigDecimal = timepris
         private set
+    var versjon: Int = versjon
+        private set
 
     private var persistertState: PersistertState? = null
 
     val erNy: Boolean get() = persistertState == null
     val erEndret: Boolean get() = persistertState != null && tilState() != persistertState
+    val persistertVersjon: Int? get() = persistertState?.versjon
 
     constructor(
         idProvider: IdProvider,
@@ -54,6 +64,7 @@ class Oppdrag private constructor(
         timepris = timepris,
         konsulentId = konsulentId,
         opprettetDato = LocalDateTime.now(),
+        versjon = 1,
     ) {
         validerDatoer()
         validerTimepris()
@@ -66,17 +77,20 @@ class Oppdrag private constructor(
             )
         }
         status = nyStatus
+        versjon++
     }
 
     fun endrePeriode(startDato: LocalDate, sluttDato: LocalDate) {
         this.startDato = startDato
         this.sluttDato = sluttDato
         validerDatoer()
+        versjon++
     }
 
     fun endreTimepris(timepris: BigDecimal) {
         this.timepris = timepris
         validerTimepris()
+        versjon++
     }
 
     fun overlapper(annet: Oppdrag): Boolean =
@@ -99,7 +113,7 @@ class Oppdrag private constructor(
     }
 
     private fun tilState() = PersistertState(
-        id, tittel, kundeNavn, beskrivelse, startDato, sluttDato, status, timepris, konsulentId, opprettetDato,
+        id, tittel, kundeNavn, beskrivelse, startDato, sluttDato, status, timepris, konsulentId, opprettetDato, versjon,
     )
 
     companion object {
@@ -115,6 +129,7 @@ class Oppdrag private constructor(
                 timepris = state.timepris,
                 konsulentId = state.konsulentId,
                 opprettetDato = state.opprettetDato,
+                versjon = state.versjon,
             ).apply {
                 bekreftPersistert()
             }
@@ -151,5 +166,6 @@ class Oppdrag private constructor(
         val timepris: BigDecimal,
         val konsulentId: Long,
         val opprettetDato: LocalDateTime,
+        val versjon: Int,
     )
 }

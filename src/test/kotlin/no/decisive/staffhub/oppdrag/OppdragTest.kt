@@ -350,7 +350,8 @@ class OppdragTest {
             status = Status.AKTIV,
             timepris = BigDecimal("1500.00"),
             konsulentId = 1L,
-            opprettetDato = LocalDateTime.of(2026, 1, 1, 12, 0)
+            opprettetDato = LocalDateTime.of(2026, 1, 1, 12, 0),
+            versjon = 1
         )
 
         val oppdrag = Oppdrag.fra(state)

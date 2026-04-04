@@ -5,20 +5,33 @@ import java.time.LocalDateTime
 
 class Konsulent private constructor(
     val id: Long,
-    var fornavn: String,
-    var etternavn: String,
-    var epost: String,
-    var telefon: String?,
+    fornavn: String,
+    etternavn: String,
+    epost: String,
+    telefon: String?,
     val opprettetDato: LocalDateTime,
     kompetanser: List<Kompetanse>,
+    versjon: Int,
 ) {
     private val _kompetanser: MutableList<Kompetanse> = kompetanser.toMutableList()
     val kompetanser: List<Kompetanse> get() = _kompetanser.toList()
+
+    var fornavn: String = fornavn
+        set(value) { field = value; versjon++ }
+    var etternavn: String = etternavn
+        set(value) { field = value; versjon++ }
+    var epost: String = epost
+        set(value) { field = value; versjon++ }
+    var telefon: String? = telefon
+        set(value) { field = value; versjon++ }
+    var versjon: Int = versjon
+        private set
 
     private var persistertState: PersistertState? = null
 
     val erNy: Boolean get() = persistertState == null
     val erEndret: Boolean get() = persistertState != null && tilState() != persistertState
+    val persistertVersjon: Int? get() = persistertState?.versjon
 
     constructor(
         idProvider: IdProvider,
@@ -35,6 +48,7 @@ class Konsulent private constructor(
         telefon = telefon,
         opprettetDato = LocalDateTime.now(),
         kompetanser = kompetanser,
+        versjon = 1,
     )
 
     fun leggTilKompetanse(kompetanse: Kompetanse) {
@@ -49,6 +63,7 @@ class Konsulent private constructor(
     private fun tilState() = PersistertState(
         id, fornavn, etternavn, epost, telefon, opprettetDato,
         _kompetanser.map { Kompetanse.PersistertState(it.id, it.fagområde, it.nivå, it.beskrivelse) },
+        versjon,
     )
 
     companion object {
@@ -62,6 +77,7 @@ class Konsulent private constructor(
                 telefon = state.telefon,
                 opprettetDato = state.opprettetDato,
                 kompetanser = kompetanser,
+                versjon = state.versjon,
             ).apply {
                 bekreftPersistert()
             }
@@ -76,5 +92,6 @@ class Konsulent private constructor(
         val telefon: String?,
         val opprettetDato: LocalDateTime,
         val kompetanser: List<Kompetanse.PersistertState>,
+        val versjon: Int,
     )
 }

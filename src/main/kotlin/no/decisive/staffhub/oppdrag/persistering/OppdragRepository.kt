@@ -1,6 +1,7 @@
 package no.decisive.staffhub.oppdrag.persistering
 
 import no.decisive.staffhub.felles.IkkeFunnetException
+import no.decisive.staffhub.felles.OptimistiskLåsingException
 import no.decisive.staffhub.oppdrag.Oppdrag
 import no.decisive.staffhub.oppdrag.Oppdrag.Status
 import org.springframework.stereotype.Repository
@@ -14,7 +15,10 @@ class OppdragRepository(
         if (oppdrag.erNy) {
             oppdragTabell.insert(tilRad(oppdrag))
         } else if (oppdrag.erEndret) {
-            oppdragTabell.update(tilRad(oppdrag))
+            val raderOppdatert = oppdragTabell.update(tilRad(oppdrag), oppdrag.persistertVersjon!!)
+            if (raderOppdatert == 0) {
+                throw OptimistiskLåsingException("Oppdrag med id ${oppdrag.id} ble endret av en annen transaksjon")
+            }
         }
         oppdrag.bekreftPersistert()
     }
@@ -44,7 +48,8 @@ class OppdragRepository(
         status = oppdrag.status.name,
         timepris = oppdrag.timepris,
         konsulentId = oppdrag.konsulentId,
-        opprettetDato = oppdrag.opprettetDato
+        opprettetDato = oppdrag.opprettetDato,
+        versjon = oppdrag.versjon
     )
 
     private fun tilDomene(rad: OppdragRad) = Oppdrag.fra(
@@ -58,7 +63,8 @@ class OppdragRepository(
             status = Status.valueOf(rad.status!!),
             timepris = rad.timepris!!,
             konsulentId = rad.konsulentId!!,
-            opprettetDato = rad.opprettetDato!!
+            opprettetDato = rad.opprettetDato!!,
+            versjon = rad.versjon!!
         )
     )
 }

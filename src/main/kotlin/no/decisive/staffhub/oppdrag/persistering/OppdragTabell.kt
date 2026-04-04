@@ -18,6 +18,7 @@ data class OppdragRad(
     val timepris: BigDecimal?,
     val konsulentId: Long?,
     val opprettetDato: LocalDateTime?,
+    val versjon: Int?,
 )
 
 @Component
@@ -34,29 +35,29 @@ class OppdragTabell(private val jdbc: JdbcTemplate) {
             status = rs.getString("status"),
             timepris = rs.getBigDecimal("timepris"),
             konsulentId = rs.getObject("konsulent_id") as? Long,
-            opprettetDato = rs.getTimestamp("opprettet_dato")?.toLocalDateTime()
+            opprettetDato = rs.getTimestamp("opprettet_dato")?.toLocalDateTime(),
+            versjon = rs.getObject("versjon") as? Int
         )
     }
 
     fun insert(rad: OppdragRad): OppdragRad {
         jdbc.update(
-            """INSERT INTO oppdrag (id, tittel, kunde_navn, beskrivelse, start_dato, slutt_dato, status, timepris, konsulent_id, opprettet_dato)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO oppdrag (id, tittel, kunde_navn, beskrivelse, start_dato, slutt_dato, status, timepris, konsulent_id, opprettet_dato, versjon)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             rad.id, rad.tittel, rad.kundeNavn, rad.beskrivelse,
             rad.startDato, rad.sluttDato, rad.status, rad.timepris,
-            rad.konsulentId, rad.opprettetDato
+            rad.konsulentId, rad.opprettetDato, rad.versjon
         )
         return rad
     }
 
-    fun update(rad: OppdragRad): OppdragRad {
-        jdbc.update(
+    fun update(rad: OppdragRad, forventetVersjon: Int): Int {
+        return jdbc.update(
             """UPDATE oppdrag SET tittel = ?, kunde_navn = ?, beskrivelse = ?, start_dato = ?, slutt_dato = ?,
-               status = ?, timepris = ? WHERE id = ?""",
+               status = ?, timepris = ?, versjon = ? WHERE id = ? AND versjon = ?""",
             rad.tittel, rad.kundeNavn, rad.beskrivelse, rad.startDato, rad.sluttDato,
-            rad.status, rad.timepris, rad.id
+            rad.status, rad.timepris, rad.versjon, rad.id, forventetVersjon
         )
-        return rad
     }
 
     fun selectById(id: Long): OppdragRad? {

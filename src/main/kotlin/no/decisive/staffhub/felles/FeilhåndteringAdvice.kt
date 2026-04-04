@@ -38,6 +38,12 @@ class FeilhåndteringAdvice {
             .body(FeilResponse(melding = ex.message ?: "Overlappende oppdrag"))
     }
 
+    @ExceptionHandler(OptimistiskLåsingException::class)
+    fun håndterOptimistiskLåsing(ex: OptimistiskLåsingException): ResponseEntity<FeilResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(FeilResponse(melding = ex.message ?: "Ressursen ble endret av en annen transaksjon"))
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun håndterValideringsfeil(ex: MethodArgumentNotValidException): ResponseEntity<FeilResponse> {
         val detaljer = ex.bindingResult.fieldErrors.map { "${it.field}: ${it.defaultMessage}" }

@@ -210,7 +210,8 @@ class KonsulentTest {
                     nivå = Kompetansenivå.SENIOR,
                     beskrivelse = "Kotlin"
                 )
-            )
+            ),
+            versjon = 1
         )
 
         val konsulent = Konsulent.fra(state)

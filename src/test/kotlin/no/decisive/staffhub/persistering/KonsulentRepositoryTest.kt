@@ -2,6 +2,7 @@ package no.decisive.staffhub.persistering
 
 import no.decisive.staffhub.felles.IdProvider
 import no.decisive.staffhub.felles.IkkeFunnetException
+import no.decisive.staffhub.felles.OptimistiskLåsingException
 import no.decisive.staffhub.konsulent.Kompetanse
 import no.decisive.staffhub.konsulent.Kompetanse.Fagområde
 import no.decisive.staffhub.konsulent.Kompetanse.Kompetansenivå
@@ -221,5 +222,26 @@ class KonsulentRepositoryTest : DatabaseTest() {
 
         assertThat(konsulent.erNy).isFalse()
         assertThat(konsulent.erEndret).isFalse()
+    }
+
+    @Test
+    fun `skal kaste OptimistiskLåsingException ved samtidig endring`() {
+        val konsulent = Konsulent(
+            idProvider = idProvider,
+            fornavn = "Ola",
+            etternavn = "Nordmann",
+            epost = "ola@firma.no"
+        )
+        repository.lagre(konsulent)
+
+        val sesjon1 = repository.hentPåId(konsulent.id)
+        val sesjon2 = repository.hentPåId(konsulent.id)
+
+        sesjon1.fornavn = "Endret av sesjon 1"
+        repository.lagre(sesjon1)
+
+        sesjon2.fornavn = "Endret av sesjon 2"
+        assertThatThrownBy { repository.lagre(sesjon2) }
+            .isInstanceOf(OptimistiskLåsingException::class.java)
     }
 }

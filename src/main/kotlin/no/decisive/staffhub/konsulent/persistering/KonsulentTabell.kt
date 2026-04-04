@@ -12,6 +12,7 @@ data class KonsulentRad(
     val epost: String?,
     val telefon: String?,
     val opprettetDato: LocalDateTime?,
+    val versjon: Int?,
 )
 
 @Component
@@ -24,24 +25,24 @@ class KonsulentTabell(private val jdbc: JdbcTemplate) {
             etternavn = rs.getString("etternavn"),
             epost = rs.getString("epost"),
             telefon = rs.getString("telefon"),
-            opprettetDato = rs.getTimestamp("opprettet_dato")?.toLocalDateTime()
+            opprettetDato = rs.getTimestamp("opprettet_dato")?.toLocalDateTime(),
+            versjon = rs.getObject("versjon") as? Int
         )
     }
 
     fun insert(rad: KonsulentRad): KonsulentRad {
         jdbc.update(
-            "INSERT INTO konsulent (id, fornavn, etternavn, epost, telefon, opprettet_dato) VALUES (?, ?, ?, ?, ?, ?)",
-            rad.id, rad.fornavn, rad.etternavn, rad.epost, rad.telefon, rad.opprettetDato
+            "INSERT INTO konsulent (id, fornavn, etternavn, epost, telefon, opprettet_dato, versjon) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            rad.id, rad.fornavn, rad.etternavn, rad.epost, rad.telefon, rad.opprettetDato, rad.versjon
         )
         return rad
     }
 
-    fun update(rad: KonsulentRad): KonsulentRad {
-        jdbc.update(
-            "UPDATE konsulent SET fornavn = ?, etternavn = ?, epost = ?, telefon = ? WHERE id = ?",
-            rad.fornavn, rad.etternavn, rad.epost, rad.telefon, rad.id
+    fun update(rad: KonsulentRad, forventetVersjon: Int): Int {
+        return jdbc.update(
+            "UPDATE konsulent SET fornavn = ?, etternavn = ?, epost = ?, telefon = ?, versjon = ? WHERE id = ? AND versjon = ?",
+            rad.fornavn, rad.etternavn, rad.epost, rad.telefon, rad.versjon, rad.id, forventetVersjon
         )
-        return rad
     }
 
     fun selectById(id: Long): KonsulentRad? {
