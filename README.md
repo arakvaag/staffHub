@@ -73,4 +73,3 @@ Testene bruker Testcontainers og starter automatisk en PostgreSQL-instans — Do
 | POST   | /api/oppdrag             | Opprett oppdrag                                        |
 | PUT    | /api/oppdrag/{id}/status | Endre status på oppdrag                                |
 | POST   | /api/timeregistreringer  | Registrer timer                                        |
-| GET    | /api/timeregistreringer  | Hent timeregistreringer                                |
